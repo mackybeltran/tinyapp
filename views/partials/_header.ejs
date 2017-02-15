@@ -4,7 +4,22 @@
  <title>TinyApp</title>
 </head>
 <body>
-<h1> TINY APP</h1>
+  <h1> TINY APP</h1>
+  <form method = "POST" action = "/login">
+    <input name = "username" type = "text" placeholder= "username" >
+    <input type = "submit" input value= "submit">
+  </form>
+
+
+    <% if (typeof(username) != 'undefined') { %>
+    <%= username%>
+  <form method="POST" action="/logout">
+    <input type="submit" value="Logout">
+  </form>
+  <% } %>
+
+
+
 
 
 </body>

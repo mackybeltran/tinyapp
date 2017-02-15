@@ -1,7 +1,10 @@
 var express = require("express"); //using the express module
 var app = express();              //enabling express to be used as app.
 const bodyParser = require("body-parser"); // middleware
+const cookieParser = require('cookie-parser'); //middleware
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
+
 var PORT = process.env.PORT || 8080; // default port 8080
 
 app.set("view engine", "ejs"); //middleware
@@ -29,13 +32,14 @@ app.get("/hello", (req, res) => {  //sample hello world at /hello
 });
 
 app.get("/urls", (req, res) => {      // rendering /urls
-  let templateVars = { urls: urlDatabase };
+  let templateVars = { urls: urlDatabase, username: req.cookies["username"] };
   res.render("urls_index", templateVars);
 
 });
 
 app.get("/urls/new", (req, res) => {  // rendering /new
-  res.render("urls_new");
+  let templateVars = {username: req.cookies["username"]}
+  res.render("urls_new", templateVars);
 });
 
 app.post("/urls", (req, res) => {
@@ -46,7 +50,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {            //renders urls/:id as defoned in urls_show
-  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id] };
+  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"] };
   res.render("urls_show", templateVars);
 });
 
@@ -58,6 +62,16 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/urls/:shortURL", (req, res) => {
   urlDatabase[req.params.shortURL] = req.body.longURL
   res.redirect("/urls")
+});
+
+app.post("/login", (req, res) => {
+  res.cookie('username', req.body.username)
+  res.redirect("/")
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("username", req.body.username)
+  res.redirect("/")
 })
 
 app.listen(PORT, () => {
