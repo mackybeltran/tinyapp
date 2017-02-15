@@ -7,13 +7,16 @@
 <% include partials/_header %>
  <h2>URLS:</h2>
 
-     <a href="">SAMPLE LINK</a>
      <ul>
        <% Object.keys(urls).forEach(function(shortUrl) { %>
-         <li><%= shortUrl %> : <%=urls[shortUrl]%></li>
+         <li><%= shortUrl %> : <%=urls[shortUrl]%>  <a href="/urls/<%=shortUrl%>"> EDIT</a>     </li>
+          <form method="POST" action="/urls/<%= shortUrl %>/delete">
+              <input type="submit" value="delete">
+          </form>
+
        <% }); %>
      </ul>
-  <form method="POST" action="/urls/9sm5xK/delete">...</form>
+
 
 </body>
 </html>
