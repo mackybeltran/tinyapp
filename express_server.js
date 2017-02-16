@@ -9,10 +9,29 @@ var PORT = process.env.PORT || 8080; // default port 8080
 
 app.set("view engine", "ejs"); //middleware
 
-var urlDatabase = {
+const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca", // out initial database
   "9sm5xK": "http://www.google.com"
 };
+
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  },
+  "user3RandomID": {
+    id: "user3RandomID",
+    email: "lincoln@dogs.com",
+    password: "arfarf"
+  }
+}
+
 
 app.post("/urls/:id/delete", (req, res) => { //deleting urls from /url
   delete urlDatabase[req.params.id];
@@ -32,13 +51,13 @@ app.get("/hello", (req, res) => {  //sample hello world at /hello
 });
 
 app.get("/urls", (req, res) => {      // rendering /urls
-  let templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  let templateVars = { urls: urlDatabase, username: req.cookies["tinyapp"] };
   res.render("urls_index", templateVars);
 
 });
 
 app.get("/urls/new", (req, res) => {  // rendering /new
-  let templateVars = {username: req.cookies["username"]}
+  let templateVars = {username: req.cookies["tinyapp"]}
   res.render("urls_new", templateVars);
 });
 
@@ -50,7 +69,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {            //renders urls/:id as defoned in urls_show
-  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"] };
+  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["tinyapp"] };
   res.render("urls_show", templateVars);
 });
 
@@ -59,19 +78,47 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
+app.get("/register", (req,res) => {          //rendering the registration page
+  res.render("urls_register");
+});
+
 app.post("/urls/:shortURL", (req, res) => {
   urlDatabase[req.params.shortURL] = req.body.longURL
   res.redirect("/urls")
 });
 
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username)
+  res.cookie('tinyapp', req.body.username)
   res.redirect("/")
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username", req.body.username)
+  res.clearCookie("tinyapp", req.body.username)
   res.redirect("/")
+})
+
+app.post("/register", (req, res) => {
+    for (let k in users){
+    if (users[k].email === req.body.email){
+      res.status(400).send("This email already exists");
+      return;
+  }
+}
+  if (!req.body.email || !req.body.password) {
+  res.status(400).send("please use a valid username and password")
+  }
+
+  else {
+        let userID = generateRandomString()
+        users[userID] = {id: userID,
+                  email: req.body.email,
+                  password: req.body.password
+        }
+        res.cookie('tinyapp', userID)
+        console.log(users);
+        res.redirect("/")
+
+}
 })
 
 app.listen(PORT, () => {
