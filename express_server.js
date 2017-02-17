@@ -51,13 +51,13 @@ app.get("/hello", (req, res) => {  //sample hello world at /hello
 });
 
 app.get("/urls", (req, res) => {      // rendering /urls
-  let templateVars = { urls: urlDatabase, username: req.cookies["tinyapp"] };
+  let templateVars = { urls: urlDatabase, user: users[req.cookies.tinyapp] };
   res.render("urls_index", templateVars);
 
 });
 
 app.get("/urls/new", (req, res) => {  // rendering /new
-  let templateVars = {username: req.cookies["tinyapp"]}
+  let templateVars = {user: users[req.cookies.tinyapp]}
   res.render("urls_new", templateVars);
 });
 
@@ -69,7 +69,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {            //renders urls/:id as defoned in urls_show
-  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["tinyapp"] };
+  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], user: users[req.cookies.tinyapp] };
   res.render("urls_show", templateVars);
 });
 
@@ -82,18 +82,29 @@ app.get("/register", (req,res) => {          //rendering the registration page
   res.render("urls_register");
 });
 
+app.get("/login", (req, res) => {
+  res.render("urls_login")
+})
+
 app.post("/urls/:shortURL", (req, res) => {
   urlDatabase[req.params.shortURL] = req.body.longURL
   res.redirect("/urls")
 });
 
 app.post("/login", (req, res) => {
-  res.cookie('tinyapp', req.body.username)
-  res.redirect("/")
+
+  for (let userID in users) {
+    if (users[userID].email === req.body.email && users[userID].password === req.body.password){
+      res.cookie('tinyapp', userID)
+      return res.redirect("/")
+    }
+    }
+  return res.status(403).send("thus username/password doesn't exist");
+
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("tinyapp", req.body.username)
+  res.clearCookie("tinyapp", userID)
   res.redirect("/")
 })
 
@@ -119,7 +130,7 @@ app.post("/register", (req, res) => {
         res.redirect("/")
 
 }
-})
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);

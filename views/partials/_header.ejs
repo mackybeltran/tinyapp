@@ -1,26 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
- <title>TinyApp</title>
-</head>
-<body>
-  <h1> TINY APP</h1>
-  <form method = "POST" action = "/login">
-    <input name = "username" type = "text" placeholder= "username" >
-    <input type = "submit" input value= "submit">
-  </form>
+<h1>  Tiny App </h1>
 
+<% if (typeof(user) != 'undefined') { %>
+  <%= user.email %>
+   <form method="POST" action="/logout">
+     <input type="submit" value="LOGOUT">
+   </form>
+<% } %>
 
-    <% if (typeof(username) != 'undefined') { %>
-    <%= username%>
-  <form method="POST" action="/logout">
-    <input type="submit" value="Logout">
-  </form>
-  <% } %>
+<% if (typeof(user) == 'undefined') { %>
+ <a href="/register">Register</a>
+<% } %>
 
-
-
-
-
-</body>
-</html>
+<% if (typeof(user) == 'undefined') { %>
+ <a href="/login">Login</a>
+<% } %>
