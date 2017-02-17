@@ -8,13 +8,20 @@
  <h2>URLS:</h2>
 
      <ul>
-       <% Object.keys(urls).forEach(function(shortUrl) { %>
-         <li><%= shortUrl %> : <%=urls[shortUrl]%>  <a href="/urls/<%=shortUrl%>"> EDIT</a>     </li>
-          <form method="POST" action="/urls/<%= shortUrl %>/delete">
+       <% Object.keys(urls).forEach(function(shortURL) {     %>
+         <li><%= shortURL %> : <%= urls[shortURL].longURL %>
+         </li>
+
+          <% if (user && user["id"] == urls[shortURL]["userID"]) { %>
+
+          <a href="/urls/<%=shortURL%>"> EDIT</a>
+          <form method="POST" action="/urls/<%= shortURL %>/delete">
               <input type="submit" value="delete">
           </form>
 
-       <% }); %>
+       <% }}); %>
+
+
      </ul>
 
 

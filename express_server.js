@@ -9,9 +9,33 @@ var PORT = process.env.PORT || 8080; // default port 8080
 
 app.set("view engine", "ejs"); //middleware
 
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca", // out initial database
-  "9sm5xK": "http://www.google.com"
+let generateRandomString = () => { //random string generator
+    let text = "";
+    let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 6; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text
+}
+
+function urlsForUser(id) {
+ const userURLs = {};
+ for (shortURL in urlDatabase){
+   if (id === urlDatabase[shortURL].userID){
+     userURLs[shortURL] = urlDatabase[shortURL];
+   }
+ }
+ return userURLs;
+}
+
+let urlDatabase = {
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca",
+               userID: "userRandomID"
+            },
+  "9sm5xK": { longURL: "http://www.google.com",
+               userID: "user2RandomID"
+            }
 };
 
 const users = {
@@ -34,7 +58,7 @@ const users = {
 
 
 app.post("/urls/:id/delete", (req, res) => { //deleting urls from /url
-  delete urlDatabase[req.params.id];
+  delete urlDatabase[req.params.id].longURL;
   res.redirect("/urls");
 });
 
@@ -51,30 +75,33 @@ app.get("/hello", (req, res) => {  //sample hello world at /hello
 });
 
 app.get("/urls", (req, res) => {      // rendering /urls
-  let templateVars = { urls: urlDatabase, user: users[req.cookies.tinyapp] };
+  let templateVars = { urls: urlsForUser(req.cookies.tinyapp), user: users[req.cookies.tinyapp] };
   res.render("urls_index", templateVars);
 
 });
 
 app.get("/urls/new", (req, res) => {  // rendering /new
   let templateVars = {user: users[req.cookies.tinyapp]}
-  res.render("urls_new", templateVars);
+  if (typeof(req.cookies.tinyapp) !== 'undefined'){
+    res.render("urls_new", templateVars)
+  } else {res.redirect("/login")
+}
 });
 
 app.post("/urls", (req, res) => {
   let shortID = generateRandomString();
-  urlDatabase[shortID] = req.body.longURL;
+  urlDatabase[shortID] = {longURL: req.body.longURL, userID: req.cookies.tinyapp};
   console.log(urlDatabase);
-  res.send("Ok");
+  res.redirect("/urls");
 });
 
-app.get("/urls/:id", (req, res) => {            //renders urls/:id as defoned in urls_show
+app.get("/urls/:id", (req, res) => {            //renders urls/:id as defined in urls_show
   let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], user: users[req.cookies.tinyapp] };
   res.render("urls_show", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL]
+  let longURL = urlDatabase[shortURL].longURL
   res.redirect(longURL);
 });
 
@@ -104,7 +131,7 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("tinyapp", userID)
+  res.clearCookie("tinyapp")
   res.redirect("/")
 })
 
@@ -137,12 +164,4 @@ app.listen(PORT, () => {
 });
 
 
-function generateRandomString() {
-    var text = "";
-    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-    for( var i=0; i < 6; i++ )
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-    return text
-}

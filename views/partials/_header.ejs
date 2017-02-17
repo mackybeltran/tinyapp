@@ -1,4 +1,4 @@
-<h1>  Tiny App </h1>
+<h1>  TINY APP </h1>
 
 <% if (typeof(user) != 'undefined') { %>
   <%= user.email %>
@@ -7,10 +7,10 @@
    </form>
 <% } %>
 
-<% if (typeof(user) == 'undefined') { %>
+<% if (typeof(user) === 'undefined') { %>
  <a href="/register">Register</a>
 <% } %>
 
-<% if (typeof(user) == 'undefined') { %>
+<% if (typeof(user) === 'undefined') { %>
  <a href="/login">Login</a>
 <% } %>
