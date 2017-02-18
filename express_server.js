@@ -1,9 +1,16 @@
 var express = require("express"); //using the express module
 var app = express();              //enabling express to be used as app.
 const bodyParser = require("body-parser"); // middleware
-const cookieParser = require('cookie-parser'); //middleware
+var cookieSession = require('cookie-session');
+ //middleware
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2']
+}))
+
+
+const bcrypt = require('bcrypt');
 
 var PORT = process.env.PORT || 8080; // default port 8080
 
@@ -75,28 +82,28 @@ app.get("/hello", (req, res) => {  //sample hello world at /hello
 });
 
 app.get("/urls", (req, res) => {      // rendering /urls
-  let templateVars = { urls: urlsForUser(req.cookies.tinyapp), user: users[req.cookies.tinyapp] };
+  let templateVars = { urls: urlsForUser(req.session.tinyapp), user: users[req.session.tinyapp] };
   res.render("urls_index", templateVars);
 
 });
 
 app.get("/urls/new", (req, res) => {  // rendering /new
-  let templateVars = {user: users[req.cookies.tinyapp]}
-  if (typeof(req.cookies.tinyapp) !== 'undefined'){
-    res.render("urls_new", templateVars)
+  let templateVars = {user: users[req.session.tinyapp]}
+  if (typeof(req.session.tinyapp) !== 'undefined'){
+    res.render("urls_new", templateVars);
   } else {res.redirect("/login")
 }
 });
 
 app.post("/urls", (req, res) => {
   let shortID = generateRandomString();
-  urlDatabase[shortID] = {longURL: req.body.longURL, userID: req.cookies.tinyapp};
+  urlDatabase[shortID] = {longURL: req.body.longURL, userID: req.session.tinyapp};
   console.log(urlDatabase);
   res.redirect("/urls");
 });
 
 app.get("/urls/:id", (req, res) => {            //renders urls/:id as defined in urls_show
-  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], user: users[req.cookies.tinyapp] };
+  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], user: users[req.session.tinyapp] };
   res.render("urls_show", templateVars);
 });
 
@@ -110,32 +117,38 @@ app.get("/register", (req,res) => {          //rendering the registration page
 });
 
 app.get("/login", (req, res) => {
-  res.render("urls_login")
+  res.render("urls_login");
 })
 
 app.post("/urls/:shortURL", (req, res) => {
-  urlDatabase[req.params.shortURL] = req.body.longURL
+  urlDatabase[req.params.shortURL] = req.body.longURL;
   res.redirect("/urls")
 });
 
 app.post("/login", (req, res) => {
+  const password = req.body.password;
+
 
   for (let userID in users) {
-    if (users[userID].email === req.body.email && users[userID].password === req.body.password){
-      res.cookie('tinyapp', userID)
-      return res.redirect("/")
+    const check = bcrypt.compareSync(password, users[userID].password);
+    if (users[userID].email === req.body.email && (check === true)){
+      req.session.tinyapp = userID;
+      return res.redirect("/");
     }
-    }
+  }
   return res.status(403).send("thus username/password doesn't exist");
 
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("tinyapp")
-  res.redirect("/")
+  req.session = null;
+  res.redirect("/");
 })
 
 app.post("/register", (req, res) => {
+    const password = req.body.password;
+    const hashed_password = bcrypt.hashSync(password, 10);
+
     for (let k in users){
     if (users[k].email === req.body.email){
       res.status(400).send("This email already exists");
@@ -150,11 +163,13 @@ app.post("/register", (req, res) => {
         let userID = generateRandomString()
         users[userID] = {id: userID,
                   email: req.body.email,
-                  password: req.body.password
+                  password: hashed_password
         }
-        res.cookie('tinyapp', userID)
+        req.session.tinyapp = userID;
         console.log(users);
+
         res.redirect("/")
+
 
 }
 });
