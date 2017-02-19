@@ -47,9 +47,9 @@ let urlDatabase = {
 
 const users = {
   "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    id: "macky",
+    email: "macky@example.com",
+    password: "macky"
   },
  "user2RandomID": {
     id: "user2RandomID",
@@ -71,8 +71,12 @@ app.post("/urls/:id/delete", (req, res) => { //deleting urls from /url
 });
 
 app.get("/", (req, res) => { //what happens when you go to /
-  res.end("Hello!");
+  if (typeof(req.session.tinyapp) !== 'undefined'){
+  res.redirect("/urls");
+  } else {res.status(401).render("urls_errorlogin");
+  }
 });
+
 
 app.get("/urls.json", (req, res) => { //the contents of the database in json format
   res.json(urlDatabase);
@@ -84,34 +88,47 @@ app.get("/hello", (req, res) => {  //sample hello world at /hello
 
 app.get("/urls", (req, res) => {      // rendering /urls
   let templateVars = { urls: urlsForUser(req.session.tinyapp), user: users[req.session.tinyapp] };
+  if (typeof(req.session.tinyapp) !== 'undefined'){
   res.render("urls_index", templateVars);
-
+  } else {res.status(401).render("urls_errorlogin")
+}
 });
 
 app.get("/urls/new", (req, res) => {  // rendering /new
   let templateVars = {user: users[req.session.tinyapp]}
   if (typeof(req.session.tinyapp) !== 'undefined'){
     res.render("urls_new", templateVars);
-  } else {res.redirect("/login")
-}
+  } else {res.status(401).render("urls_errorlogin");
+  }
 });
 
 app.post("/urls", (req, res) => {
   let shortID = generateRandomString();
   urlDatabase[shortID] = {longURL: req.body.longURL, userID: req.session.tinyapp};
-  console.log(urlDatabase);
-  res.redirect("/urls");
+  res.redirect("/urls/");
 });
 
 app.get("/urls/:id", (req, res) => {            //renders urls/:id as defined in urls_show
   let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], user: users[req.session.tinyapp] };
-  res.render("urls_show", templateVars);
-});
+
+  for (var shortURL in urlsForUser(req.session.tinyapp) ){
+    if (req.params.id === shortURL && typeof(req.session.tinyapp) !== 'undefined'){
+    res.render("urls_show", templateVars)
+    } if (typeof(req.session.tinyapp) === 'undefined'){
+      res.status(401).render("urls_errorlogin")
+    } else {
+      res.status(404).render("urls_errorurl")
+    }
+  }
+})
 
 app.get("/u/:shortURL", (req, res) => {
-  let website = urlDatabase[shortURL].longURL;
-  res.redirect(website);
-});
+  for(var x in urlDatabase ){
+    if (x === req.params.shortURL){
+      return res.redirect(urlDatabase[x].longURL)
+    }
+  } return res.status(404).render("urls_errorurl")
+ })
 
 app.get("/register", (req,res) => {          //rendering the registration page
   res.render("urls_register");
@@ -168,17 +185,14 @@ app.post("/register", (req, res) => {
                   password: hashed_password
         }
         req.session.tinyapp = userID;
-        console.log(users);
-
         res.redirect("/urls")
 
-
-}
+      }
 });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
-});
+})
 
 
 
