@@ -20,10 +20,10 @@ let generateRandomString = () => { //random string generator
     let text = "";
     let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-    for( var i=0; i < 6; i++ )
+    for( var i=0; i < 6; i++ );
         text += possible.charAt(Math.floor(Math.random() * possible.length));
 
-    return text
+    return text;
 }
 
 function urlsForUser(id) {
@@ -64,8 +64,9 @@ const users = {
 }
 
 
+
 app.post("/urls/:id/delete", (req, res) => { //deleting urls from /url
-  delete urlDatabase[req.params.id].longURL;
+  delete urlDatabase[req.params.id];
   res.redirect("/urls");
 });
 
@@ -108,8 +109,8 @@ app.get("/urls/:id", (req, res) => {            //renders urls/:id as defined in
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[shortURL].longURL
-  res.redirect(longURL);
+  let website = urlDatabase[shortURL].longURL;a
+  res.redirect(website);
 });
 
 app.get("/register", (req,res) => {          //rendering the registration page
@@ -121,7 +122,8 @@ app.get("/login", (req, res) => {
 })
 
 app.post("/urls/:shortURL", (req, res) => {
-  urlDatabase[req.params.shortURL] = req.body.longURL;
+  urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+
   res.redirect("/urls")
 });
 
@@ -156,11 +158,11 @@ app.post("/register", (req, res) => {
   }
 }
   if (!req.body.email || !req.body.password) {
-  res.status(400).send("please use a valid username and password")
+  res.status(400).send("please use a valid username and password");
   }
 
   else {
-        let userID = generateRandomString()
+        let userID = generateRandomString();
         users[userID] = {id: userID,
                   email: req.body.email,
                   password: hashed_password
