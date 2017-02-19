@@ -20,7 +20,7 @@ let generateRandomString = () => { //random string generator
     let text = "";
     let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-    for( var i=0; i < 6; i++ );
+    for( var i=0; i < 6; i++ )
         text += possible.charAt(Math.floor(Math.random() * possible.length));
 
     return text;
@@ -109,7 +109,7 @@ app.get("/urls/:id", (req, res) => {            //renders urls/:id as defined in
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  let website = urlDatabase[shortURL].longURL;a
+  let website = urlDatabase[shortURL].longURL;
   res.redirect(website);
 });
 
@@ -135,7 +135,7 @@ app.post("/login", (req, res) => {
     const check = bcrypt.compareSync(password, users[userID].password);
     if (users[userID].email === req.body.email && (check === true)){
       req.session.tinyapp = userID;
-      return res.redirect("/");
+      return res.redirect("/urls");
     }
   }
   return res.status(403).send("thus username/password doesn't exist");
@@ -144,7 +144,7 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   req.session = null;
-  res.redirect("/");
+  res.redirect("/urls");
 })
 
 app.post("/register", (req, res) => {
@@ -170,7 +170,7 @@ app.post("/register", (req, res) => {
         req.session.tinyapp = userID;
         console.log(users);
 
-        res.redirect("/")
+        res.redirect("/urls")
 
 
 }
